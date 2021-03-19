@@ -1,6 +1,7 @@
 export interface IQueue {
     internalSounds: string[];
-    externalSounds: string[];
+    sentSounds: string[];
+    receivedSounds: string[];
 }
 
 export interface ISoundbox {
@@ -33,4 +34,9 @@ export interface ISound {
     quote: string,
     titleFiltered: string,
     quoteFiltered: string
+}
+
+export interface IMessage {
+    sender: string,
+    url: string
 }

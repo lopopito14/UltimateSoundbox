@@ -3,17 +3,20 @@ import { IQueue } from "../interfaces";
 
 type PushInternalSoundAction = { type: 'pushInternalSound', sound: string };
 type PopInternalSoundAction = { type: 'popInternalSound' };
-type PushExternalSoundAction = { type: 'pushExternalSound', sound: string };
-type PopExternalSoundAction = { type: 'popExternalSound' };
+type PushSentSoundAction = { type: 'pushSentSound', sound: string };
+type PopSentSoundAction = { type: 'popSentSound' };
+type PushReceivedSoundAction = { type: 'pushReceivedSound', sound: string };
+type PopReceivedSoundAction = { type: 'popReceivedSound' };
 type ChangeModeAction = { type: 'changeMode', local: boolean };
-type TActions = PushInternalSoundAction | PopInternalSoundAction | PushExternalSoundAction | PopExternalSoundAction | ChangeModeAction;
+type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | ChangeModeAction;
 type TDispatch = (action: TActions) => void;
 type TState = { queue: IQueue, local: boolean };
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
     queue: {
         internalSounds: [],
-        externalSounds: []
+        sentSounds: [],
+        receivedSounds: []
     },
     local: true
 };
@@ -51,24 +54,45 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 }
             }
         }
-        case 'pushExternalSound': {
+        case 'pushSentSound': {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
-                    externalSounds: [
-                        ...state.queue.externalSounds,
+                    sentSounds: [
+                        ...state.queue.sentSounds,
                         action.sound
                     ]
                 }
             }
         }
-        case 'popExternalSound': {
+        case 'popSentSound': {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
-                    externalSounds: state.queue.externalSounds.slice(1)
+                    sentSounds: state.queue.sentSounds.slice(1)
+                }
+            }
+        }
+        case 'pushReceivedSound': {
+            return {
+                ...state,
+                queue: {
+                    ...state.queue,
+                    receivedSounds: [
+                        ...state.queue.receivedSounds,
+                        action.sound
+                    ]
+                }
+            }
+        }
+        case 'popReceivedSound': {
+            return {
+                ...state,
+                queue: {
+                    ...state.queue,
+                    receivedSounds: state.queue.receivedSounds.slice(1)
                 }
             }
         }

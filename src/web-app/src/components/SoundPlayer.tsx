@@ -1,5 +1,6 @@
 import React from 'react';
 import { useContext } from '../hooks/useContext';
+import useSignalR from '../hooks/useSignalR';
 import useSoundPlayer from '../hooks/useSoundPlayer';
 import "./Sound.css";
 
@@ -8,6 +9,7 @@ const SoundPlayer = () => {
     const { context } = useContext();
 
     const { audioSource, onEnded, onPlaying } = useSoundPlayer();
+    const _ = useSignalR();
 
     const audio = React.useRef<HTMLAudioElement>(null);
 
@@ -57,11 +59,11 @@ const SoundPlayer = () => {
                         </div>
                     </div> :
                     <div>
-                        <h3>{context.state.queue.externalSounds.length} external sound(s) to play !</h3>
+                        <h3>{context.state.queue.receivedSounds.length} received sound(s) to play !</h3>
                         <audio src={audioSource} ref={audio} />
                         <div>
                             {
-                                context.state.queue.externalSounds.map((sound, i) =>
+                                context.state.queue.receivedSounds.map((sound, i) =>
                                     <div key={`${sound}_${i}`}>
                                         {sound}
                                     </div>
