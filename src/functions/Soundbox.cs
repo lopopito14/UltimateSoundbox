@@ -12,12 +12,12 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Company.Function
 {
-    public static class Functions
+    public static class Soundbox
     {
         private static HttpClient _httpClient = new HttpClient();
 
-        [FunctionName("Soundbox")]
-        public static async Task<IActionResult> Soundbox(
+        [FunctionName("soundbox")]
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log,
             ExecutionContext context)
@@ -37,9 +37,9 @@ namespace Company.Function
             return new NotFoundObjectResult(jsonFileName);
         }
 
-        [FunctionName("Banner")]
+        [FunctionName("banner")]
         public static async Task<IActionResult> Banner(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Banner/{bundleId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "banner/{bundleId}")] HttpRequest req,
             string bundleId,
             ILogger log)
         {
@@ -59,9 +59,9 @@ namespace Company.Function
             return new NotFoundObjectResult($"bundle_{bundleId}");
         }
 
-        [FunctionName("Character")]
+        [FunctionName("character")]
         public static async Task<IActionResult> Character(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Character/{bundleId}/{characterId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "character/{bundleId}/{characterId}")] HttpRequest req,
             string bundleId,
             string characterId,
             ILogger log)
@@ -82,9 +82,9 @@ namespace Company.Function
             return new NotFoundObjectResult($"bundle_{bundleId} - character_{ bundleId }_{ characterId}.jpg");
         }
 
-        [FunctionName("Image")]
+        [FunctionName("image")]
         public static async Task<IActionResult> Image(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Image/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "image/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
             string bundleId,
             string soundId,
             string movieId,
@@ -106,9 +106,9 @@ namespace Company.Function
             return new NotFoundObjectResult($"bundle_{bundleId} - img_{bundleId}_{soundId}_{movieId}.jpg");
         }
 
-        [FunctionName("Sound")]
+        [FunctionName("sound")]
         public static async Task<IActionResult> Sound(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Sound/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "sound/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
             string bundleId,
             string soundId,
             string movieId,
