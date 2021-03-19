@@ -1,5 +1,6 @@
 export interface IQueue {
-    sounds: string[];
+    internalSounds: string[];
+    externalSounds: string[];
 }
 
 export interface ISoundbox {

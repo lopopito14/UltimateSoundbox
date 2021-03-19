@@ -11,6 +11,10 @@ const SoundPlayer = () => {
 
     const audio = React.useRef<HTMLAudioElement>(null);
 
+    const onChangeMode = React.useCallback(() => {
+        context.dispatch({ type: 'changeMode', local: !context.state.local });
+    }, [context]);
+
     React.useEffect(() => {
         if (audio.current) {
             audio.current.addEventListener('playing', onPlaying);
@@ -33,17 +37,39 @@ const SoundPlayer = () => {
 
     return (
         <div>
-            <h3>{context.state.queue.sounds.length} sound(s) to play !</h3>
-            <audio src={audioSource} ref={audio} />
             <div>
-                {
-                    context.state.queue.sounds.map((sound, i) =>
-                        <div key={`${sound}_${i}`}>
-                            {sound}
-                        </div>
-                    )
-                }
+                <input type="checkbox" id="mode" name="mode" checked={context.state.local} onClick={onChangeMode} />
+                <label htmlFor="mode">Local Mode</label>
             </div>
+            {
+                context.state.local ?
+                    <div>
+                        <h3>{context.state.queue.internalSounds.length} internal sound(s) to play !</h3>
+                        <audio src={audioSource} ref={audio} />
+                        <div>
+                            {
+                                context.state.queue.internalSounds.map((sound, i) =>
+                                    <div key={`${sound}_${i}`}>
+                                        {sound}
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div> :
+                    <div>
+                        <h3>{context.state.queue.externalSounds.length} external sound(s) to play !</h3>
+                        <audio src={audioSource} ref={audio} />
+                        <div>
+                            {
+                                context.state.queue.externalSounds.map((sound, i) =>
+                                    <div key={`${sound}_${i}`}>
+                                        {sound}
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
+            }
         </div>
     )
 }

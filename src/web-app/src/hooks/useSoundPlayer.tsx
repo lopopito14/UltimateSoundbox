@@ -12,7 +12,7 @@ const useSoundPlayer = () => {
     }, []);
 
     const onPlaying = React.useCallback(() => {
-        context.dispatch({ type: 'popSound' });
+        context.dispatch({ type: 'popInternalSound' });
     }, [context]);
 
     React.useEffect(() => {
@@ -24,10 +24,10 @@ const useSoundPlayer = () => {
             setAudioSource(base64);
         }
 
-        if (!audioSource && context.state.queue.sounds.length > 0) {
-            fetchSound(context.state.queue.sounds[0]);
+        if (context.state.local && !audioSource && context.state.queue.internalSounds.length > 0) {
+            fetchSound(context.state.queue.internalSounds[0]);
         }
-    }, [audioSource, context.state.queue.sounds]);
+    }, [audioSource, context.state.local, context.state.queue.internalSounds]);
 
     return { audioSource, onEnded, onPlaying }
 }

@@ -1,14 +1,21 @@
 import React, { Dispatch } from "react";
 import { IQueue } from "../interfaces";
 
-type TActions = { type: 'pushSound', sound: string } | { type: 'popSound' };
+type PushInternalSoundAction = { type: 'pushInternalSound', sound: string };
+type PopInternalSoundAction = { type: 'popInternalSound' };
+type PushExternalSoundAction = { type: 'pushExternalSound', sound: string };
+type PopExternalSoundAction = { type: 'popExternalSound' };
+type ChangeModeAction = { type: 'changeMode', local: boolean };
+type TActions = PushInternalSoundAction | PopInternalSoundAction | PushExternalSoundAction | PopExternalSoundAction | ChangeModeAction;
 type TDispatch = (action: TActions) => void;
-type TState = { queue: IQueue };
+type TState = { queue: IQueue, local: boolean };
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
     queue: {
-        sounds: []
-    }
+        internalSounds: [],
+        externalSounds: []
+    },
+    local: true
 };
 
 export interface IContextProps {
@@ -23,25 +30,52 @@ const MainContext = React.createContext<{ state: TState; dispatch: TDispatch }>(
 
 const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
-        case 'pushSound': {
+        case 'pushInternalSound': {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
-                    sounds: [
-                        ...state.queue.sounds,
+                    internalSounds: [
+                        ...state.queue.internalSounds,
                         action.sound
                     ]
                 }
             }
         }
-        case 'popSound': {
+        case 'popInternalSound': {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
-                    sounds: state.queue.sounds.slice(1)
+                    internalSounds: state.queue.internalSounds.slice(1)
                 }
+            }
+        }
+        case 'pushExternalSound': {
+            return {
+                ...state,
+                queue: {
+                    ...state.queue,
+                    externalSounds: [
+                        ...state.queue.externalSounds,
+                        action.sound
+                    ]
+                }
+            }
+        }
+        case 'popExternalSound': {
+            return {
+                ...state,
+                queue: {
+                    ...state.queue,
+                    externalSounds: state.queue.externalSounds.slice(1)
+                }
+            }
+        }
+        case 'changeMode': {
+            return {
+                ...state,
+                local: action.local
             }
         }
         default: {
