@@ -1,28 +1,23 @@
-import './App.css';
-import Bundle from './components/Bundle';
-import SoundPlayer from './components/SoundPlayer';
-import useSoundbox from './hooks/useSoundbox';
+
+import { BrowserRouter, Route } from "react-router-dom";
+import TermsOfUse from './components/TermsOfUse';
+import Tab from './components/Tab';
+import TabConfig from './components/TabConfig';
+import * as microsoftTeams from "@microsoft/teams-js";
 
 const App = () => {
-
-  const { datas } = useSoundbox();
+  microsoftTeams.initialize(() => {
+    microsoftTeams.appInitialization.notifySuccess();
+  });
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>ULTIMATE SOUNDBOX</h1>
-      </header>
-      <SoundPlayer />
-      <main className="App-container">
-        <div>
-          {
-            datas && datas.bundles.map(b =>
-              <Bundle key={b.id} bundle={b} />
-            )
-          }
-        </div>
-      </main>
-    </div>
+    <BrowserRouter>
+      <div>
+        <Route exact path="/tab" component={Tab} />
+        <Route exact path="/termsofuse" component={TermsOfUse} />
+        <Route exact path="/config" component={TabConfig} />
+      </div>
+    </BrowserRouter>
   );
 }
 

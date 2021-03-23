@@ -4,15 +4,19 @@
   "private": true,
   "dependencies": {
     "@microsoft/signalr": "^5.0.4",
+    "@microsoft/teams-js": "^1.9.0",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
     "@types/jest": "^26.0.21",
+    "@types/microsoftteams": "^1.2.3",
     "@types/node": "^12.20.6",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.2",
+    "@types/react-router-dom": "^5.1.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "typescript": "^4.2.3",
     "web-vitals": "^1.1.1"
@@ -40,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "msteams": {
+    "teamsAppId": "2f65b18b-3325-4305-b80f-7de63ad7d6cb"
   }
 }

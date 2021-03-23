@@ -1,8 +1,8 @@
-.App {
+.Tab {
   text-align: center;
 }
 
-.App-header {
+.Tab-header {
   background-color: #282c34;
   height: 10vh;
   display: flex;
@@ -13,6 +13,6 @@
   color: white;
 }
 
-.App-container {
+.Tab-container {
   margin: 10px;
 }

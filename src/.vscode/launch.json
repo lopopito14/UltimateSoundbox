@@ -6,6 +6,34 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
+        },
+		{
+            "name": "Debug Teams (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/_#/l/app/2f65b18b-3325-4305-b80f-7de63ad7d6cb?installAppPackage=true",
+            "webRoot": "${workspaceFolder}/web-app"
+        },
+        {
+            "name": "Debug Teams (Firefox)",
+            "type": "firefox",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/_#/l/app/2f65b18b-3325-4305-b80f-7de63ad7d6cb?installAppPackage=true",
+            "webRoot": "${workspaceFolder}/web-app"
+        },
+        {
+            "name": "Debug (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://localhost:3000/tab",
+            "webRoot": "${workspaceFolder}/web-app"
+        },
+        {
+            "name": "Debug (Firefox)",
+            "type": "firefox",
+            "request": "launch",
+            "url": "https://localhost:3000/tab",
+            "webRoot": "${workspaceFolder}/web-app"
         }
     ]
 }
