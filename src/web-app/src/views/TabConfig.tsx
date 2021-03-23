@@ -7,7 +7,7 @@ const TabConfig = () => {
 
         microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
 
-            let baseUrl = `https://${window.location.hostname}:${window.location.port}`;
+            let baseUrl = `${window.location.origin}`;
 
             microsoftTeams.settings.setSettings({
                 suggestedDisplayName: "Main",

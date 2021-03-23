@@ -1,8 +1,8 @@
 
 import { BrowserRouter, Route } from "react-router-dom";
-import TermsOfUse from './components/TermsOfUse';
-import Tab from './components/Tab';
-import TabConfig from './components/TabConfig';
+import TermsOfUse from './views/TermsOfUse';
+import Tab from './views/Tab';
+import TabConfig from './views/TabConfig';
 import * as microsoftTeams from "@microsoft/teams-js";
 
 const App = () => {

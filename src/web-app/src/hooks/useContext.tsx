@@ -1,5 +1,6 @@
 import React, { Dispatch } from "react";
 import { IQueue } from "../interfaces";
+import * as microsoftTeams from "@microsoft/teams-js";
 
 type PushInternalSoundAction = { type: 'pushInternalSound', sound: string };
 type PopInternalSoundAction = { type: 'popInternalSound' };
@@ -8,9 +9,15 @@ type PopSentSoundAction = { type: 'popSentSound' };
 type PushReceivedSoundAction = { type: 'pushReceivedSound', sound: string };
 type PopReceivedSoundAction = { type: 'popReceivedSound' };
 type ChangeModeAction = { type: 'changeMode', local: boolean };
-type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | ChangeModeAction;
+type GetContextAction = { type: 'getContext', context: microsoftTeams.Context };
+type UpdateThemeAction = { type: 'updateTheme', theme: string };
+type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | ChangeModeAction | GetContextAction | UpdateThemeAction;
 type TDispatch = (action: TActions) => void;
-type TState = { queue: IQueue, local: boolean };
+type TState = {
+    queue: IQueue,
+    local: boolean,
+    context?: microsoftTeams.Context,
+};
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
     queue: {
@@ -18,7 +25,8 @@ const InitialState: TState = {
         sentSounds: [],
         receivedSounds: []
     },
-    local: true
+    local: true,
+    context: undefined,
 };
 
 export interface IContextProps {
@@ -101,6 +109,25 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 ...state,
                 local: action.local
             }
+        }
+        case 'getContext': {
+            return {
+                ...state,
+                context: action.context
+            }
+        }
+        case 'updateTheme': {
+            if (state.context) {
+                return {
+                    ...state,
+                    context: {
+                        ...state.context,
+                        theme: action.theme
+                    }
+                }
+            }
+
+            return state;
         }
         default: {
             return state;
