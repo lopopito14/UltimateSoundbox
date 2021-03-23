@@ -7,7 +7,7 @@ const useImage = (bundleId: string, soundId: string, movieId: string) => {
 
     React.useEffect(() => {
         const fetchImage = async () => {
-            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/Image/${bundleId}/${soundId}/${movieId}`);
+            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/image/${bundleId}/${soundId}/${movieId}`);
             const base64 = await response.text();
 
             setImage(base64);

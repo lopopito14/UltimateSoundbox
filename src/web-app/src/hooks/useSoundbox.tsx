@@ -8,7 +8,7 @@ const useSoundbox = () => {
 
     React.useEffect(() => {
         const fetchDatas = async () => {
-            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/Soundbox`);
+            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/soundbox`);
             const json = await response.json() as ISoundbox;
 
             setDatas(json);

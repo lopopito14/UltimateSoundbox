@@ -7,7 +7,7 @@ const useSound = (bundleId: string, soundId: string, movieId: string) => {
     const { context } = useContext();
 
     const onQueueSound = React.useCallback(() => {
-        const uri: string = `${REACT_APP_AZURE_FUNCTIONS_API}/Sound/${bundleId}/${soundId}/${movieId}`;
+        const uri: string = `${REACT_APP_AZURE_FUNCTIONS_API}/sound/${bundleId}/${soundId}/${movieId}`;
         if (context.state.local) {
             context.dispatch({ type: 'pushInternalSound', sound: uri });
         } else {

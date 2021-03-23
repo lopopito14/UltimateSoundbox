@@ -7,7 +7,7 @@ const useBanner = (bundleId: string) => {
 
     React.useEffect(() => {
         const fetchBanner = async () => {
-            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/Banner/${bundleId}`);
+            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/banner/${bundleId}`);
             const base64 = await response.text();
 
             setBanner(base64);
