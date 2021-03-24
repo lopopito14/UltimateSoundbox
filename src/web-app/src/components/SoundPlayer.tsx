@@ -13,10 +13,6 @@ const SoundPlayer = () => {
 
     const audio = React.useRef<HTMLAudioElement>(null);
 
-    const onChangeMode = React.useCallback(() => {
-        context.dispatch({ type: 'changeMode', local: !context.state.local });
-    }, [context]);
-
     React.useEffect(() => {
         if (audio.current) {
             audio.current.addEventListener('playing', onPlaying);
@@ -39,10 +35,6 @@ const SoundPlayer = () => {
 
     return (
         <div>
-            <div>
-                <input type="checkbox" id="mode" name="mode" checked={context.state.local} onClick={onChangeMode} />
-                <label htmlFor="mode">Local Mode</label>
-            </div>
             {
                 context.state.local ?
                     <div>

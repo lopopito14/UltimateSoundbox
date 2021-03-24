@@ -8,10 +8,9 @@ type PushSentSoundAction = { type: 'pushSentSound', sound: string };
 type PopSentSoundAction = { type: 'popSentSound' };
 type PushReceivedSoundAction = { type: 'pushReceivedSound', sound: string };
 type PopReceivedSoundAction = { type: 'popReceivedSound' };
-type ChangeModeAction = { type: 'changeMode', local: boolean };
 type GetContextAction = { type: 'getContext', context: microsoftTeams.Context };
 type UpdateThemeAction = { type: 'updateTheme', theme: string };
-type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | ChangeModeAction | GetContextAction | UpdateThemeAction;
+type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | GetContextAction | UpdateThemeAction;
 type TDispatch = (action: TActions) => void;
 type TState = {
     queue: IQueue,
@@ -104,16 +103,11 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 }
             }
         }
-        case 'changeMode': {
-            return {
-                ...state,
-                local: action.local
-            }
-        }
         case 'getContext': {
             return {
                 ...state,
-                context: action.context
+                context: action.context,
+                local: action.context?.channelId === undefined
             }
         }
         case 'updateTheme': {
