@@ -15,10 +15,12 @@ namespace Company.Function
     public static class Soundbox
     {
         private static HttpClient _httpClient = new HttpClient();
+        private const string ImageMimeType = "image/jpeg";
+        private const string AudioMimeType = "audio/mpeg";
 
         [FunctionName("soundbox")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest httpRequest,
             ILogger log,
             ExecutionContext context)
         {
@@ -39,17 +41,14 @@ namespace Company.Function
 
         [FunctionName("banner")]
         public static async Task<IActionResult> Banner(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "banner/{bundleId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "banner/{bundleId}")] HttpRequest httpRequest,
+            [Blob("banners/bundle_{bundleId}/banner_{bundleId}.jpg", FileAccess.Read)] Stream bannerStream,
             string bundleId,
             ILogger log)
         {
             try
             {
-                CloudBlob cloudBlockBlob = GetBlob("banners", $"bundle_{bundleId}", $"banner_{bundleId}.jpg");
-                string url = cloudBlockBlob.Uri.ToString();
-
-                string data = await GetBase64(url, "image/jpeg");
-                return new OkObjectResult(data);
+                return new OkObjectResult(await GetStreamContent(bannerStream, ImageMimeType));
             }
             catch (Exception e)
             {
@@ -61,18 +60,15 @@ namespace Company.Function
 
         [FunctionName("character")]
         public static async Task<IActionResult> Character(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "character/{bundleId}/{characterId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "character/{bundleId}/{characterId}")] HttpRequest httpRequest,
+            [Blob("characters/bundle_{bundleId}/character_{bundleId}_{characterId}.jpg", FileAccess.Read)] Stream characterStream,
             string bundleId,
             string characterId,
             ILogger log)
         {
             try
             {
-                CloudBlob cloudBlockBlob = GetBlob("characters", $"bundle_{bundleId}", $"character_{bundleId}_{characterId}.jpg");
-                string url = cloudBlockBlob.Uri.ToString();
-
-                string data = await GetBase64(url, "image/jpeg");
-                return new OkObjectResult(data);
+                return new OkObjectResult(await GetStreamContent(characterStream, ImageMimeType));
             }
             catch (Exception e)
             {
@@ -84,7 +80,8 @@ namespace Company.Function
 
         [FunctionName("image")]
         public static async Task<IActionResult> Image(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "image/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "image/{bundleId}/{soundId}/{movieId}")] HttpRequest httpRequest,
+            [Blob("images/bundle_{bundleId}/img_{bundleId}_{soundId}_{movieId}.jpg", FileAccess.Read)] Stream imageStream,
             string bundleId,
             string soundId,
             string movieId,
@@ -92,11 +89,7 @@ namespace Company.Function
         {
             try
             {
-                CloudBlob cloudBlockBlob = GetBlob("images", $"bundle_{bundleId}", $"img_{bundleId}_{soundId}_{movieId}.jpg");
-                string url = cloudBlockBlob.Uri.ToString();
-
-                string data = await GetBase64(url, "image/jpeg");
-                return new OkObjectResult(data);
+                return new OkObjectResult(await GetStreamContent(imageStream, ImageMimeType));
             }
             catch (Exception e)
             {
@@ -108,7 +101,8 @@ namespace Company.Function
 
         [FunctionName("sound")]
         public static async Task<IActionResult> Sound(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "sound/{bundleId}/{soundId}/{movieId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "sound/{bundleId}/{soundId}/{movieId}")] HttpRequest httpRequest,
+            [Blob("sounds/bundle_{bundleId}/img_{bundleId}_{soundId}_{movieId}.jpg", FileAccess.Read)] Stream imageStream,
             string bundleId,
             string soundId,
             string movieId,
@@ -124,8 +118,8 @@ namespace Company.Function
                 });
                 var url = string.Format("{0}{1}", cloudBlockBlob.Uri, sharedAccess);
 
-                string data = await GetBase64(url, "audio/mpeg");
-                return new OkObjectResult(data);
+                var stream = await _httpClient.GetStreamAsync(url);
+                return new OkObjectResult(await GetStreamContent(stream, AudioMimeType));
             }
             catch (Exception e)
             {
@@ -137,7 +131,7 @@ namespace Company.Function
 
         private static CloudBlob GetBlob(string container, string directory, string blobName)
         {
-            string storageConnectionString = Environment.GetEnvironmentVariable("StorageConnectionString", EnvironmentVariableTarget.Process);
+            string storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage", EnvironmentVariableTarget.Process);
 
             CloudStorageAccount blobAccount = CloudStorageAccount.Parse(storageConnectionString);
             CloudBlobClient blobClient = blobAccount.CreateCloudBlobClient();
@@ -148,12 +142,16 @@ namespace Company.Function
             return blobDirectory.GetBlockBlobReference(blobName);
         }
 
-        private static async Task<string> GetBase64(string url, string mimeType)
+        private static async Task<string> GetStreamContent(Stream stream, string mimeType)
         {
-            var bytes = await _httpClient.GetByteArrayAsync(url);
-            var base64 = Convert.ToBase64String(bytes);
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await stream.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+                var base64 = Convert.ToBase64String(bytes);
 
-            return $"data:{mimeType};base64,{base64}";
+                return $"data:{mimeType};base64,{base64}";
+            }
         }
     }
 }
