@@ -2,7 +2,7 @@
 
 ## Web client
 
-    - [ ] Manage local mode, microsoft teams mode
+    - [x] Manage local mode, microsoft teams mode
     - [x] SignalR connection
     - [ ] Search filter
     - [ ] Favorite sounds (async storage)
