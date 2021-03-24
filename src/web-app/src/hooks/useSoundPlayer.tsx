@@ -1,4 +1,5 @@
 import React from "react";
+import { IInternalSound } from "../interfaces";
 import { useContext } from "./useContext";
 
 const useSoundPlayer = () => {
@@ -21,8 +22,8 @@ const useSoundPlayer = () => {
 
     React.useEffect(() => {
 
-        const fetchSound = async (url: string) => {
-            const response = await fetch(url);
+        const fetchSound = async (internalSound: IInternalSound) => {
+            const response = await fetch(internalSound.soundUrl);
             const base64 = await response.text();
 
             setAudioSource(base64);

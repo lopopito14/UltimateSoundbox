@@ -1,7 +1,16 @@
 export interface IQueue {
-    internalSounds: string[];
-    sentSounds: string[];
-    receivedSounds: string[];
+    internalSounds: IInternalSound[];
+    sentSounds: IExternalSound[];
+    receivedSounds: IExternalSound[];
+}
+
+export interface IInternalSound {
+    soundUrl: string;
+}
+
+export interface IExternalSound {
+    soundUrl: string;
+    sender: string;
 }
 
 export interface ISoundbox {
@@ -34,6 +43,23 @@ export interface ISound {
     quote: string,
     titleFiltered: string,
     quoteFiltered: string
+}
+
+export interface IJoinGroupMessage {
+    userId: string;
+    groupId: string;
+}
+
+export interface IPersonnalMessage {
+    sender: string;
+    url: string;
+    userId: string;
+}
+
+export interface IGroupMessage {
+    sender: string;
+    url: string;
+    groupId: string;
 }
 
 export interface IMessage {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useContext } from './useContext';
 import { HubConnection, HubConnectionBuilder, IHttpConnectionOptions, LogLevel } from '@microsoft/signalr';
-import { IMessage } from '../interfaces';
+import { IExternalSound, IGroupMessage, IJoinGroupMessage, IMessage, IPersonnalMessage } from '../interfaces';
 
 const useSignalR = () => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
@@ -10,46 +10,90 @@ const useSignalR = () => {
 
     const { context } = useContext();
 
-    const newMessage = React.useCallback((data: any) => {
+    const newPersonnalMessage = React.useCallback((data: any) => {
         const message = data as IMessage;
         if (message) {
-            context.dispatch({ type: 'pushReceivedSound', sound: message.url });
+            context.dispatch({
+                type: 'pushReceivedSound',
+                externalSound: {
+                    soundUrl: message.url,
+                    sender: message.sender
+                }
+            });
+        }
+    }, [context]);
+
+    const newGroupMessage = React.useCallback((data: any) => {
+        const message = data as IMessage;
+        if (message) {
+            if (message.sender !== context.state.context?.loginHint) {
+                context.dispatch({
+                    type: 'pushReceivedSound',
+                    externalSound: {
+                        soundUrl: message.url,
+                        sender: message.sender
+                    }
+                });
+            }
         }
     }, [context]);
 
     React.useEffect(() => {
 
-        const sendSound = async (url: string) => {
-            const message: IMessage = {
-                sender: window.navigator.appName,
-                url: url
+        const sendGroupSound = async (externalSound: IExternalSound, groupId: string) => {
+            const groupMessage: IGroupMessage = {
+                sender: externalSound.sender,
+                url: externalSound.soundUrl,
+                groupId: groupId
             };
 
-            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/message`, {
+            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/groupMessage`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(message)
+                body: JSON.stringify(groupMessage)
+            });
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const sendPersonnalSound = async (externalSound: IExternalSound, userId: string) => {
+            const personnalMessage: IPersonnalMessage = {
+                sender: externalSound.sender,
+                url: externalSound.soundUrl,
+                userId: userId
+            };
+
+            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/personnalMessage`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(personnalMessage)
             });
         }
 
         if (!context.state.local) {
             if (context.state.queue.sentSounds.length > 0) {
-                sendSound(context.state.queue.sentSounds[0]);
-                context.dispatch({ type: 'popSentSound' });
+                if (context.state.context?.groupId) {
+                    sendGroupSound(context.state.queue.sentSounds[0], context.state.context?.groupId);
+                    context.dispatch({ type: 'popSentSound' });
+                }
             }
         }
     }, [REACT_APP_AZURE_FUNCTIONS_API, context, context.state.local, context.state.queue.sentSounds])
 
     React.useEffect(() => {
 
-        const subscribe = async () => {
+        const subscribe = async (name: string) => {
             try {
                 const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/negotiate`, {
                     method: 'POST',
-                    headers: {},
+                    headers: {
+                        'name': name
+                    },
                     body: null
                 });
 
@@ -65,7 +109,8 @@ const useSignalR = () => {
                     .build();
 
                 setConnection(connection);
-                connection.on("newMessage", newMessage);
+                connection.on("personnalMessage", newPersonnalMessage);
+                connection.on("groupMessage", newGroupMessage);
                 await connection.start();
             } catch (e) {
                 console.error(e);
@@ -76,7 +121,8 @@ const useSignalR = () => {
             try {
                 if (connection) {
                     await connection.stop();
-                    connection.off("newMessage", newMessage);
+                    connection.off("personnalMessage", newPersonnalMessage);
+                    connection.off("groupMessage", newGroupMessage);
                     setConnection(undefined);
                 }
             } catch (e) {
@@ -89,12 +135,37 @@ const useSignalR = () => {
                 unSubscribe();
             }
         } else {
-            if (!connection) {
-                subscribe();
+            if (!connection && context.state.context?.loginHint) {
+                subscribe(context.state.context?.loginHint);
             }
         }
 
-    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.local, newMessage]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.loginHint, context.state.local, newGroupMessage, newPersonnalMessage]);
+
+    React.useEffect(() => {
+
+        const joinGroup = async (groupId: string, userId: string) => {
+            const joinGroupMessage: IJoinGroupMessage = {
+                groupId: groupId,
+                userId: userId
+            };
+
+            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/joinGroup`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(joinGroupMessage)
+            });
+        }
+
+        if (connection) {
+            if (context.state.context?.groupId && context.state.context?.loginHint) {
+                joinGroup(context.state.context?.groupId, context.state.context?.loginHint);
+            }
+        }
+    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.groupId, context.state.context?.loginHint]);
 
     return {}
 }

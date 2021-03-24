@@ -1,12 +1,12 @@
 import React, { Dispatch } from "react";
-import { IQueue } from "../interfaces";
+import { IExternalSound, IInternalSound, IQueue } from "../interfaces";
 import * as microsoftTeams from "@microsoft/teams-js";
 
-type PushInternalSoundAction = { type: 'pushInternalSound', sound: string };
+type PushInternalSoundAction = { type: 'pushInternalSound', internalSound: IInternalSound };
 type PopInternalSoundAction = { type: 'popInternalSound' };
-type PushSentSoundAction = { type: 'pushSentSound', sound: string };
+type PushSentSoundAction = { type: 'pushSentSound', externalSound: IExternalSound };
 type PopSentSoundAction = { type: 'popSentSound' };
-type PushReceivedSoundAction = { type: 'pushReceivedSound', sound: string };
+type PushReceivedSoundAction = { type: 'pushReceivedSound', externalSound: IExternalSound };
 type PopReceivedSoundAction = { type: 'popReceivedSound' };
 type GetContextAction = { type: 'getContext', context: microsoftTeams.Context };
 type UpdateThemeAction = { type: 'updateTheme', theme: string };
@@ -47,7 +47,7 @@ const mainReducer = (state: TState, action: TActions): TState => {
                     ...state.queue,
                     internalSounds: [
                         ...state.queue.internalSounds,
-                        action.sound
+                        action.internalSound
                     ]
                 }
             }
@@ -68,7 +68,7 @@ const mainReducer = (state: TState, action: TActions): TState => {
                     ...state.queue,
                     sentSounds: [
                         ...state.queue.sentSounds,
-                        action.sound
+                        action.externalSound
                     ]
                 }
             }
@@ -89,7 +89,7 @@ const mainReducer = (state: TState, action: TActions): TState => {
                     ...state.queue,
                     receivedSounds: [
                         ...state.queue.receivedSounds,
-                        action.sound
+                        action.externalSound
                     ]
                 }
             }

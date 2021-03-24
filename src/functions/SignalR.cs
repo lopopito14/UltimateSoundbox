@@ -12,23 +12,38 @@ namespace Company.Function
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo GetSignalRInfo(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
-            [SignalRConnectionInfo(HubName = "chat")] SignalRConnectionInfo connectionInfo)
+            [SignalRConnectionInfo(HubName = "chat", UserId = "{headers.name}")] SignalRConnectionInfo connectionInfo)
         {
             return connectionInfo;
         }
 
-        [FunctionName("message")]
-        public static Task SendMessage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] Message message,
+        [FunctionName("joinGroup")]
+        public static Task JoinGroup(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] JoinGroupMessage joinGroupMessage,
+            [SignalR(HubName = "chat")] IAsyncCollector<SignalRGroupAction> signalRGroupActions, ILogger log)
+        {
+            return signalRGroupActions.AddAsync(
+                 new SignalRGroupAction
+                 {
+                     UserId = joinGroupMessage.userId,
+                     GroupName = joinGroupMessage.groupId,
+                     Action = GroupAction.Add
+                 });
+        }
+
+        [FunctionName("personnalMessage")]
+        public static Task SendPersonnalMessage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] PersonnalInMessage message,
             [SignalR(HubName = "chat")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log)
         {
             return signalRMessages.AddAsync(
                 new SignalRMessage
                 {
-                    Target = "newMessage",
+                    UserId = message.userId,
+                    Target = "personnalMessage",
                     Arguments = new[] {
-                        new Message{
+                        new OutMessage{
                             sender = message.sender,
                             url = message.url
                         }
@@ -36,7 +51,50 @@ namespace Company.Function
                 });
         }
 
-        public class Message
+        [FunctionName("groupMessage")]
+        public static Task SendGroupMessage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] GroupInMessage message,
+            [SignalR(HubName = "chat")] IAsyncCollector<SignalRMessage> signalRMessages,
+            ILogger log)
+        {
+            return signalRMessages.AddAsync(
+                new SignalRMessage
+                {
+                    GroupName = message.groupID,
+                    Target = "groupMessage",
+                    Arguments = new[] {
+                        new OutMessage{
+                            sender = message.sender,
+                            url = message.url
+                        }
+                    }
+                });
+        }
+
+        public class JoinGroupMessage
+        {
+            public string userId;
+
+            public string groupId;
+        }
+
+        public class PersonnalInMessage
+        {
+            public string sender;
+            public string url;
+
+            public string userId;
+        }
+
+        public class GroupInMessage
+        {
+            public string sender;
+            public string url;
+
+            public string groupID;
+        }
+
+        public class OutMessage
         {
             public string sender;
             public string url;
