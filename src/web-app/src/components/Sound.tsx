@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMainContext } from '../hooks/useContext';
+import useFavorite from '../hooks/useFavorite';
 import useImage from '../hooks/useImage';
 import useSound from '../hooks/useSound';
 import { ISound } from '../interfaces';
@@ -21,6 +22,7 @@ const Sound = (props: IProps) => {
 
     const { image } = useImage(bundleId, sound.id, sound.movie);
     const { onQueueSound } = useSound(bundleId, sound.id, sound.movie);
+    const { manageFavorite } = useFavorite(bundleId, sound.id, sound.movie);
 
     React.useEffect(() => {
 
@@ -41,9 +43,16 @@ const Sound = (props: IProps) => {
         <>
             {
                 displaySound &&
-                <div className="Sound-card" onClick={onQueueSound}>
-                    <img className="Sound-img" src={image} alt={sound.title} />
-                    <h4 className="Sound-title">{sound.title}</h4>
+                <div className="Sound-card">
+                    <div onClick={onQueueSound}>
+                        <img className="Sound-img" src={image} alt={sound.title} />
+                        <h4 className="Sound-title">{sound.title}</h4>
+                    </div>
+                    <button onClick={manageFavorite}>
+                        {
+                            sound.favorite ? 'Remove' : 'Add'
+                        }
+                    </button>
                 </div>
             }
         </>

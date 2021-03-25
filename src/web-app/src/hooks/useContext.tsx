@@ -14,6 +14,7 @@ export enum Types {
     LOAD_SOUNDBOX = 'LOAD_SOUNDBOX',
     FILTER_SOUNDBOX = 'FILTER_SOUNDBOX',
     SEARCH_SOUNDBOX = 'SEARCH_SOUNDBOX',
+    MANAGED_FAVORITE = 'MANAGED_FAVORITE',
 
     PUSH_INTERNAL_SOUND = 'PUSH_INTERNAL_SOUND',
     POP_INTERNAL_SOUND = 'POP_INTERNAL_SOUND',
@@ -32,6 +33,7 @@ export enum Types {
 type LoadSoundboxAction = Action<Types.LOAD_SOUNDBOX, ISoundbox>;
 type FilterSoundboxAction = Action<Types.FILTER_SOUNDBOX, boolean>;
 type SearchSoundboxAction = Action<Types.SEARCH_SOUNDBOX, string>;
+type ManageFavoriteAction = Action<Types.MANAGED_FAVORITE, { bundleId: number, soundId: number, movieId: number }>
 type PushInternalSoundAction = Action<Types.PUSH_INTERNAL_SOUND, IInternalSound>;
 type PopInternalSoundAction = TypedAction<Types.POP_INTERNAL_SOUND>;
 type PushSentSoundAction = Action<Types.PUSH_SENT_SOUND, IExternalSound>;
@@ -43,7 +45,7 @@ type UpdateThemeAction = Action<Types.UPDATE_THEME, string>;
 type PushErrorAction = Action<Types.PUSH_ERROR_ACTION, any>;
 type PopErrorAction = TypedAction<Types.POP_ERROR_ACTION>;
 
-type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction | SearchSoundboxAction;
+type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction | SearchSoundboxAction | ManageFavoriteAction;
 type SoundActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction;
 type TeamsActions = GetContextAction | UpdateThemeAction;
 type ErrorActions = PushErrorAction | PopErrorAction;
@@ -92,7 +94,8 @@ const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
         case Types.LOAD_SOUNDBOX:
         case Types.FILTER_SOUNDBOX:
-        case Types.SEARCH_SOUNDBOX: {
+        case Types.SEARCH_SOUNDBOX:
+        case Types.MANAGED_FAVORITE: {
             return soundboxReducer(state, action);
         }
         case Types.PUSH_INTERNAL_SOUND:
@@ -142,6 +145,46 @@ const soundboxReducer = (state: TState, action: SoundboxActions): TState => {
                     search: action.payload
                 }
             }
+        }
+        case Types.MANAGED_FAVORITE: {
+            if (!state.soundbox) {
+                return state;
+            }
+
+            const { bundleId, movieId, soundId } = action.payload;
+            const bundle = state.soundbox?.bundles.find(b => b.id === bundleId);
+            if (bundle) {
+                const bundleIndex = state.soundbox?.bundles.indexOf(bundle);
+
+                const sound = bundle.sounds.find(s => s.id === soundId && s.movie === movieId);
+                if (sound) {
+                    const soundIndex = bundle.sounds.indexOf(sound);
+
+                    return {
+                        ...state,
+                        soundbox: {
+                            ...state.soundbox,
+                            bundles: [
+                                ...state.soundbox.bundles.slice(0, bundleIndex),
+                                {
+                                    ...bundle,
+                                    sounds: [
+                                        ...bundle.sounds.slice(0, soundIndex),
+                                        {
+                                            ...sound,
+                                            favorite: !sound.favorite
+                                        },
+                                        ...bundle.sounds.slice(soundIndex + 1),
+                                    ]
+                                },
+                                ...state.soundbox.bundles.slice(bundleIndex + 1),
+                            ]
+                        }
+                    }
+                }
+            }
+
+            return state;
         }
         default: {
             return state;
