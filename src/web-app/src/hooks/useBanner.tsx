@@ -1,7 +1,7 @@
 import React from 'react';
 import { Types, useMainContext } from './useContext';
 
-const useBanner = (bundleId: string) => {
+const useBanner = (bundleId: number) => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
 
     const { dispatch } = useMainContext();

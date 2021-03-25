@@ -12,6 +12,7 @@ export interface Action<T, P> extends TypedAction<T> {
 
 export enum Types {
     LOAD_SOUNDBOX = 'LOAD_SOUNDBOX',
+    FILTER_SOUNDBOX = 'FILTER_SOUNDBOX',
 
     PUSH_INTERNAL_SOUND = 'PUSH_INTERNAL_SOUND',
     POP_INTERNAL_SOUND = 'POP_INTERNAL_SOUND',
@@ -28,6 +29,7 @@ export enum Types {
 }
 
 type LoadSoundboxAction = Action<Types.LOAD_SOUNDBOX, ISoundbox>;
+type FilterSoundboxAction = Action<Types.FILTER_SOUNDBOX, boolean>;
 type PushInternalSoundAction = Action<Types.PUSH_INTERNAL_SOUND, IInternalSound>;
 type PopInternalSoundAction = TypedAction<Types.POP_INTERNAL_SOUND>;
 type PushSentSoundAction = Action<Types.PUSH_SENT_SOUND, IExternalSound>;
@@ -39,7 +41,7 @@ type UpdateThemeAction = Action<Types.UPDATE_THEME, string>;
 type PushErrorAction = Action<Types.PUSH_ERROR_ACTION, any>;
 type PopErrorAction = TypedAction<Types.POP_ERROR_ACTION>;
 
-type SoundboxActions = LoadSoundboxAction;
+type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction;
 type SoundActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction;
 type TeamsActions = GetContextAction | UpdateThemeAction;
 type ErrorActions = PushErrorAction | PopErrorAction;
@@ -48,6 +50,9 @@ type TActions = SoundboxActions | SoundActions | TeamsActions | ErrorActions;
 type TDispatch = (action: TActions) => void;
 type TState = {
     soundbox?: ISoundbox,
+    filter: {
+        showAll: boolean
+    }
     queue: IQueue,
     offline: boolean,
     teamsContext?: microsoftTeams.Context,
@@ -56,6 +61,9 @@ type TState = {
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
     soundbox: undefined,
+    filter: {
+        showAll: true
+    },
     queue: {
         internalSounds: [],
         sentSounds: [],
@@ -78,7 +86,8 @@ const MainContext = React.createContext<IContextProps>({
 
 const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
-        case Types.LOAD_SOUNDBOX: {
+        case Types.LOAD_SOUNDBOX:
+        case Types.FILTER_SOUNDBOX: {
             return soundboxReducer(state, action);
         }
         case Types.PUSH_INTERNAL_SOUND:
@@ -109,6 +118,15 @@ const soundboxReducer = (state: TState, action: SoundboxActions): TState => {
             return {
                 ...state,
                 soundbox: action.payload
+            }
+        }
+        case Types.FILTER_SOUNDBOX: {
+            return {
+                ...state,
+                filter: {
+                    ...state.filter,
+                    showAll: action.payload
+                }
             }
         }
         default: {
@@ -239,8 +257,6 @@ const errorReducer = (state: TState, action: ErrorActions): TState => {
             }
         }
         case Types.POP_ERROR_ACTION: {
-            console.log(state.errors);
-
             return {
                 ...state,
                 errors: state.errors.slice(1)

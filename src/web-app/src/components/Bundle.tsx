@@ -22,7 +22,7 @@ const Bundle = (props: IProps) => {
             <div className="Sound-container">
                 {
                     bundle.sounds.map(s =>
-                        <Sound key={s.id} bundleId={bundle.id} sound={s} />
+                        <Sound key={`${s.id}`} bundleId={bundle.id} sound={s} />
                     )
                 }
             </div>

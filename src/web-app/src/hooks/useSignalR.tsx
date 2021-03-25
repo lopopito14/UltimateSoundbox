@@ -209,8 +209,6 @@ const useSignalR = () => {
             }
         }
     }, [REACT_APP_AZURE_FUNCTIONS_API, connection, dispatch, teamsContext?.groupId, teamsContext?.loginHint]);
-
-    return {}
 }
 
 export default useSignalR;

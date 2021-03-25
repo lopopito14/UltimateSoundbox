@@ -7,6 +7,7 @@
     - [ ] Search filter
     - [ ] Favorite sounds (async storage)
     - [ ] Current sound playing style
+    - [ ] Add sticky bar
 
 ## Functions
 

@@ -18,7 +18,7 @@ export interface ISoundbox {
 }
 
 export interface IBundle {
-    id: string;
+    id: number;
     title: string;
     movies: IMovie[];
     characters: ICharacter[];
@@ -26,18 +26,18 @@ export interface IBundle {
 }
 
 export interface IMovie {
-    id: string;
+    id: number;
     title: string;
 }
 
 export interface ICharacter {
-    id: string;
+    id: number;
     name: string;
 }
 
 export interface ISound {
-    id: string;
-    movie: string;
+    id: number;
+    movie: number;
     title: string,
     timing: string,
     quote: string,

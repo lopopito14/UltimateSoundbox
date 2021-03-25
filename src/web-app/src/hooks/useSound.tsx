@@ -1,7 +1,7 @@
 import React from 'react';
 import { Types, useMainContext } from './useContext';
 
-const useSound = (bundleId: string, soundId: string, movieId: string) => {
+const useSound = (bundleId: number, soundId: number, movieId: number) => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
 
     const { state, dispatch } = useMainContext();
