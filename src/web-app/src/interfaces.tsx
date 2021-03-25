@@ -42,7 +42,8 @@ export interface ISound {
     timing: string,
     quote: string,
     titleFiltered: string,
-    quoteFiltered: string
+    quoteFiltered: string,
+    favorite: boolean
 }
 
 export interface IJoinGroupMessage {

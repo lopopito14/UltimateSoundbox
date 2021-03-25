@@ -6,13 +6,15 @@ const useSoundPlayer = () => {
 
     const { context } = useContext();
 
+    const { queue } = context.state;
+
     const [audioSource, setAudioSource] = React.useState<string | undefined>(undefined);
 
-    const onSoundEnded = React.useCallback(() => {
+    const onEnded = React.useCallback(() => {
         setAudioSource(undefined);
     }, []);
 
-    const onSoundPlaying = React.useCallback(() => {
+    const onPlaying = React.useCallback(() => {
         if (context.state.local) {
             context.dispatch({ type: 'popInternalSound' });
         } else {
@@ -30,16 +32,16 @@ const useSoundPlayer = () => {
         }
 
         if (!audioSource) {
-            if (context.state.local && context.state.queue.internalSounds.length > 0) {
-                fetchSound(context.state.queue.internalSounds[0]);
-            } else if (!context.state.local && context.state.queue.receivedSounds.length > 0) {
-                fetchSound(context.state.queue.receivedSounds[0]);
+            if (context.state.local && queue.internalSounds.length > 0) {
+                fetchSound(queue.internalSounds[0]);
+            } else if (!context.state.local && queue.receivedSounds.length > 0) {
+                fetchSound(queue.receivedSounds[0]);
             }
         }
 
-    }, [audioSource, context.state.local, context.state.queue.internalSounds, context.state.queue.receivedSounds]);
+    }, [audioSource, context.state.local, queue.internalSounds, queue.receivedSounds]);
 
-    return { audioSource, onEnded: onSoundEnded, onPlaying: onSoundPlaying }
+    return { queue, audioSource, onEnded, onPlaying }
 }
 
 export default useSoundPlayer;

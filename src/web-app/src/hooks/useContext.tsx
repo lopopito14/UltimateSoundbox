@@ -1,7 +1,8 @@
 import React, { Dispatch } from "react";
-import { IExternalSound, IInternalSound, IQueue } from "../interfaces";
+import { IExternalSound, IInternalSound, IQueue, ISoundbox } from "../interfaces";
 import * as microsoftTeams from "@microsoft/teams-js";
 
+type LoadSoundboxAction = { type: 'loadSoundbox', soundbox: ISoundbox };
 type PushInternalSoundAction = { type: 'pushInternalSound', internalSound: IInternalSound };
 type PopInternalSoundAction = { type: 'popInternalSound' };
 type PushSentSoundAction = { type: 'pushSentSound', externalSound: IExternalSound };
@@ -10,15 +11,17 @@ type PushReceivedSoundAction = { type: 'pushReceivedSound', externalSound: IExte
 type PopReceivedSoundAction = { type: 'popReceivedSound' };
 type GetContextAction = { type: 'getContext', context: microsoftTeams.Context };
 type UpdateThemeAction = { type: 'updateTheme', theme: string };
-type TActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | GetContextAction | UpdateThemeAction;
+type TActions = LoadSoundboxAction | PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | GetContextAction | UpdateThemeAction;
 type TDispatch = (action: TActions) => void;
 type TState = {
+    soundbox?: ISoundbox,
     queue: IQueue,
     local: boolean,
     context?: microsoftTeams.Context,
 };
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
+    soundbox: undefined,
     queue: {
         internalSounds: [],
         sentSounds: [],
@@ -40,6 +43,12 @@ const MainContext = React.createContext<{ state: TState; dispatch: TDispatch }>(
 
 const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
+        case 'loadSoundbox': {
+            return {
+                ...state,
+                soundbox: action.soundbox
+            }
+        }
         case 'pushInternalSound': {
             return {
                 ...state,

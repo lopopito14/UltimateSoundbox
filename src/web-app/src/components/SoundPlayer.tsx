@@ -8,7 +8,7 @@ const SoundPlayer = () => {
 
     const { context } = useContext();
 
-    const { audioSource, onEnded, onPlaying } = useSoundPlayer();
+    const { queue, audioSource, onEnded, onPlaying } = useSoundPlayer();
     useSignalR();
 
     const audio = React.useRef<HTMLAudioElement>(null);
@@ -38,11 +38,11 @@ const SoundPlayer = () => {
             {
                 context.state.local ?
                     <div>
-                        <h3>{context.state.queue.internalSounds.length} internal sound(s) to play !</h3>
+                        <h3>{queue.internalSounds.length} internal sound(s) to play !</h3>
                         <audio src={audioSource} ref={audio} />
                         <div>
                             {
-                                context.state.queue.internalSounds.map((sound, i) =>
+                                queue.internalSounds.map((sound, i) =>
                                     <div key={`${sound.soundUrl}_${i}`}>
                                         <div>{sound.soundUrl}</div>
                                     </div>
@@ -51,11 +51,11 @@ const SoundPlayer = () => {
                         </div>
                     </div> :
                     <div>
-                        <h3>{context.state.queue.receivedSounds.length} received sound(s) to play !</h3>
+                        <h3>{queue.receivedSounds.length} received sound(s) to play !</h3>
                         <audio src={audioSource} ref={audio} />
                         <div>
                             {
-                                context.state.queue.receivedSounds.map((sound, i) =>
+                                queue.receivedSounds.map((sound, i) =>
                                     <div key={`${sound.soundUrl}_${i}`}>
                                         <div>{sound.soundUrl} - {sound.sender}</div>
                                     </div>

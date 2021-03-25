@@ -8,7 +8,7 @@ import { useContext } from '../hooks/useContext';
 
 const Tab = () => {
 
-    const { datas } = useSoundbox();
+    const { soundbox } = useSoundbox();
     const { context } = useContext();
 
     React.useEffect(() => {
@@ -37,7 +37,7 @@ const Tab = () => {
             <main className="Tab-container">
                 <div>
                     {
-                        datas && datas.bundles.map(b =>
+                        soundbox?.bundles.map(b =>
                             <Bundle key={b.id} bundle={b} />
                         )
                     }
