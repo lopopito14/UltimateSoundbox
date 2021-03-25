@@ -1,13 +1,7 @@
 import React from 'react';
 import { Types, useMainContext } from './useContext';
 
-interface IProps {
-    search: string;
-}
-
-const useSearch = (props: IProps) => {
-
-    const { search } = props;
+const useSearch = (search: string) => {
 
     const { dispatch } = useMainContext();
 

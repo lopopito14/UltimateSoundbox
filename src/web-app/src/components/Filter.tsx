@@ -7,7 +7,7 @@ const Filter = () => {
 
     const [showAll, setShowAll] = React.useState<boolean>(true);
 
-    useFilter({ showAll: showAll });
+    useFilter(showAll);
 
     const onChangeFilter = React.useCallback((showAll: boolean) => {
         setShowAll(showAll);

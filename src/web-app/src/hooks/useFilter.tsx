@@ -1,13 +1,7 @@
 import React from 'react';
 import { Types, useMainContext } from './useContext';
 
-interface IProps {
-    showAll: boolean;
-}
-
-const useFilter = (props: IProps) => {
-
-    const { showAll } = props;
+const useFilter = (showAll: boolean) => {
 
     const { dispatch } = useMainContext();
 

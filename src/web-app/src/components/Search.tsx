@@ -7,7 +7,7 @@ const Search = () => {
 
     const [search, setSearch] = React.useState<string>('');
 
-    useSearch({ search: search });
+    useSearch(search);
 
     const onSearch = React.useCallback((e: FormEvent<HTMLInputElement>) => {
         setSearch(e.currentTarget.value);
