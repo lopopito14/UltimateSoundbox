@@ -1,12 +1,13 @@
 import React from 'react';
 import { useContext } from './useContext';
 import { HubConnection, HubConnectionBuilder, IHttpConnectionOptions, LogLevel } from '@microsoft/signalr';
-import { IExternalSound, IGroupMessage, IJoinGroupMessage, IMessage, IPersonnalMessage } from '../interfaces';
+import { IExternalSound, IGroupMessage, IJoinGroupMessage, ILeaveGroupMessage, IMessage, IPersonnalMessage } from '../interfaces';
 
 const useSignalR = () => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
 
     const [connection, setConnection] = React.useState<HubConnection | undefined>(undefined);
+    const [hasNegociate, setHasNegociate] = React.useState<boolean>(false);
 
     const { context } = useContext();
 
@@ -88,6 +89,13 @@ const useSignalR = () => {
     React.useEffect(() => {
 
         const subscribe = async (name: string) => {
+
+            if (hasNegociate) {
+                return;
+            }
+
+            setHasNegociate(true);
+
             try {
                 const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/negotiate`, {
                     method: 'POST',
@@ -135,14 +143,30 @@ const useSignalR = () => {
                 unSubscribe();
             }
         } else {
-            if (!connection && context.state.context?.loginHint) {
+            if (!hasNegociate && context.state.context?.loginHint) {
                 subscribe(context.state.context?.loginHint);
             }
         }
 
-    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.loginHint, context.state.local, newGroupMessage, newPersonnalMessage]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.loginHint, context.state.local, hasNegociate, newGroupMessage, newPersonnalMessage]);
 
     React.useEffect(() => {
+
+        const leaveGroup = async (groupId: string, userId: string) => {
+            const leaveGroupMessage: ILeaveGroupMessage = {
+                groupId: groupId,
+                userId: userId
+            };
+
+            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/leaveGroup`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(leaveGroupMessage)
+            });
+        }
 
         const joinGroup = async (groupId: string, userId: string) => {
             const joinGroupMessage: IJoinGroupMessage = {
@@ -162,6 +186,7 @@ const useSignalR = () => {
 
         if (connection) {
             if (context.state.context?.groupId && context.state.context?.loginHint) {
+                leaveGroup(context.state.context?.groupId, context.state.context?.loginHint);
                 joinGroup(context.state.context?.groupId, context.state.context?.loginHint);
             }
         }
