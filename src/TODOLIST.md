@@ -5,9 +5,11 @@
     - [x] Manage local mode, microsoft teams mode
     - [x] SignalR connection
     - [x] Search filter
-    - [-] Favorite sounds (async storage)
+    - [x] Favorite sounds (local storage)
     - [ ] Current sound playing style
     - [ ] Add sticky bar
+    - [ ] Progress bar soundbox loading
+    - [ ] Error message (in Toast)
 
 ## Functions
 

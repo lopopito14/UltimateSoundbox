@@ -2,6 +2,7 @@ import React from 'react';
 import { useMainContext } from '../hooks/useContext';
 import useFavorite from '../hooks/useFavorite';
 import useImage from '../hooks/useImage';
+import useLocalStorage from '../hooks/useLocalStorage';
 import useSound from '../hooks/useSound';
 import { ISound } from '../interfaces';
 import "./Sound.css";
@@ -23,6 +24,17 @@ const Sound = (props: IProps) => {
     const { image } = useImage(bundleId, sound.id, sound.movie);
     const { onQueueSound } = useSound(bundleId, sound.id, sound.movie);
     const { manageFavorite } = useFavorite(bundleId, sound.id, sound.movie);
+    const { add, remove } = useLocalStorage(bundleId, sound.id);
+
+    const changeFavorite = React.useCallback((favorite: boolean) => {
+        manageFavorite();
+
+        if (favorite) {
+            add()
+        } else {
+            remove();
+        }
+    }, [add, manageFavorite, remove]);
 
     React.useEffect(() => {
 
@@ -37,7 +49,7 @@ const Sound = (props: IProps) => {
         }
 
         setDisplaySound(filteringCondition && searchingCondition);
-    }, [search, showAll, sound.favorite, sound.quote])
+    }, [search, showAll, sound.favorite, sound.quote]);
 
     return (
         <>
@@ -48,7 +60,7 @@ const Sound = (props: IProps) => {
                         <img className="Sound-img" src={image} alt={sound.title} />
                         <h4 className="Sound-title">{sound.title}</h4>
                     </div>
-                    <button onClick={manageFavorite}>
+                    <button onClick={() => changeFavorite(!sound.favorite)}>
                         {
                             sound.favorite ? 'Remove' : 'Add'
                         }

@@ -1,5 +1,5 @@
 import React from "react";
-import { IExternalSound, IInternalSound, IQueue, ISoundbox } from "../interfaces";
+import { IExternalSound, IInternalSound, ILocalStorage, IQueue, ISoundbox } from "../interfaces";
 import * as microsoftTeams from "@microsoft/teams-js";
 
 export interface TypedAction<T> {
@@ -12,6 +12,7 @@ export interface Action<T, P> extends TypedAction<T> {
 
 export enum Types {
     LOAD_SOUNDBOX = 'LOAD_SOUNDBOX',
+    LOAD_FAVORITES = 'LOAD_FAVORITES',
     FILTER_SOUNDBOX = 'FILTER_SOUNDBOX',
     SEARCH_SOUNDBOX = 'SEARCH_SOUNDBOX',
     MANAGED_FAVORITE = 'MANAGED_FAVORITE',
@@ -31,6 +32,7 @@ export enum Types {
 }
 
 type LoadSoundboxAction = Action<Types.LOAD_SOUNDBOX, ISoundbox>;
+type LoadFavorites = Action<Types.LOAD_FAVORITES, ILocalStorage>;
 type FilterSoundboxAction = Action<Types.FILTER_SOUNDBOX, boolean>;
 type SearchSoundboxAction = Action<Types.SEARCH_SOUNDBOX, string>;
 type ManageFavoriteAction = Action<Types.MANAGED_FAVORITE, { bundleId: number, soundId: number, movieId: number }>
@@ -45,7 +47,7 @@ type UpdateThemeAction = Action<Types.UPDATE_THEME, string>;
 type PushErrorAction = Action<Types.PUSH_ERROR_ACTION, any>;
 type PopErrorAction = TypedAction<Types.POP_ERROR_ACTION>;
 
-type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction | SearchSoundboxAction | ManageFavoriteAction;
+type SoundboxActions = LoadSoundboxAction | LoadFavorites | FilterSoundboxAction | SearchSoundboxAction | ManageFavoriteAction;
 type SoundActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction;
 type TeamsActions = GetContextAction | UpdateThemeAction;
 type ErrorActions = PushErrorAction | PopErrorAction;
@@ -95,7 +97,8 @@ const mainReducer = (state: TState, action: TActions): TState => {
         case Types.LOAD_SOUNDBOX:
         case Types.FILTER_SOUNDBOX:
         case Types.SEARCH_SOUNDBOX:
-        case Types.MANAGED_FAVORITE: {
+        case Types.MANAGED_FAVORITE:
+        case Types.LOAD_FAVORITES: {
             return soundboxReducer(state, action);
         }
         case Types.PUSH_INTERNAL_SOUND:
@@ -126,6 +129,40 @@ const soundboxReducer = (state: TState, action: SoundboxActions): TState => {
             return {
                 ...state,
                 soundbox: action.payload
+            }
+        }
+        case Types.LOAD_FAVORITES: {
+            if (!state.soundbox) {
+                return state;
+            }
+
+            return {
+                ...state,
+                soundbox: {
+                    ...state.soundbox,
+                    bundles: state.soundbox?.bundles.map(b => {
+                        return {
+                            ...b,
+                            sounds: b.sounds.map(s => {
+
+                                let favorite = false;
+
+                                const bundle = action.payload.bundles.find(bu => bu.id === b.id);
+                                if (bundle) {
+                                    const sound = bundle.sounds.find(so => so.id === s.id);
+                                    if (sound) {
+                                        favorite = true;
+                                    }
+                                }
+
+                                return {
+                                    ...s,
+                                    favorite: favorite
+                                }
+                            })
+                        }
+                    })
+                }
             }
         }
         case Types.FILTER_SOUNDBOX: {

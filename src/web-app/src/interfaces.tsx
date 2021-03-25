@@ -72,3 +72,12 @@ export interface IMessage {
     sender: string,
     url: string
 }
+
+export interface ILocalStorage {
+    bundles: {
+        id: number,
+        sounds: {
+            id: number
+        }[]
+    }[]
+}
