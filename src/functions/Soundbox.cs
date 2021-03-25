@@ -102,7 +102,6 @@ namespace Company.Function
         [FunctionName("sound")]
         public static async Task<IActionResult> Sound(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "sound/{bundleId}/{soundId}/{movieId}")] HttpRequest httpRequest,
-            [Blob("sounds/bundle_{bundleId}/img_{bundleId}_{soundId}_{movieId}.jpg", FileAccess.Read)] Stream imageStream,
             string bundleId,
             string soundId,
             string movieId,

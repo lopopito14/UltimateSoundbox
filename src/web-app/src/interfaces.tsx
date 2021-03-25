@@ -51,6 +51,11 @@ export interface IJoinGroupMessage {
     groupId: string;
 }
 
+export interface ILeaveGroupMessage {
+    userId: string;
+    groupId: string;
+}
+
 export interface IPersonnalMessage {
     sender: string;
     url: string;

@@ -31,6 +31,20 @@ namespace Company.Function
                  });
         }
 
+        [FunctionName("leaveGroup")]
+        public static Task LeaveGroup(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] LeaveGroupMessage leaveGroupMessage,
+            [SignalR(HubName = "chat")] IAsyncCollector<SignalRGroupAction> signalRGroupActions, ILogger log)
+        {
+            return signalRGroupActions.AddAsync(
+                 new SignalRGroupAction
+                 {
+                     UserId = leaveGroupMessage.userId,
+                     GroupName = leaveGroupMessage.groupId,
+                     Action = GroupAction.Remove
+                 });
+        }
+
         [FunctionName("personnalMessage")]
         public static Task SendPersonnalMessage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] PersonnalInMessage message,
@@ -72,6 +86,13 @@ namespace Company.Function
         }
 
         public class JoinGroupMessage
+        {
+            public string userId;
+
+            public string groupId;
+        }
+
+        public class LeaveGroupMessage
         {
             public string userId;
 
