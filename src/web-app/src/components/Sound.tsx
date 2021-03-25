@@ -17,14 +17,25 @@ const Sound = (props: IProps) => {
     const [displaySound, setDisplaySound] = React.useState<boolean>(true);
 
     const { state } = useMainContext();
-    const { showAll } = state.filter;
+    const { showAll, search } = state.filter;
 
     const { image } = useImage(bundleId, sound.id, sound.movie);
     const { onQueueSound } = useSound(bundleId, sound.id, sound.movie);
 
     React.useEffect(() => {
-        setDisplaySound(showAll || sound.favorite);
-    }, [showAll, sound.favorite])
+
+        const filteringCondition = showAll || sound.favorite;
+        let searchingCondition = true;
+
+        if (search.length > 0) {
+            const normalizedSearch = search.toLowerCase().normalize('NFC');
+            const normalizedTitle = sound.quote.toLowerCase().normalize('NFC');
+
+            searchingCondition = normalizedTitle.includes(normalizedSearch);
+        }
+
+        setDisplaySound(filteringCondition && searchingCondition);
+    }, [search, showAll, sound.favorite, sound.quote])
 
     return (
         <>

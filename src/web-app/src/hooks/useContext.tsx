@@ -13,6 +13,7 @@ export interface Action<T, P> extends TypedAction<T> {
 export enum Types {
     LOAD_SOUNDBOX = 'LOAD_SOUNDBOX',
     FILTER_SOUNDBOX = 'FILTER_SOUNDBOX',
+    SEARCH_SOUNDBOX = 'SEARCH_SOUNDBOX',
 
     PUSH_INTERNAL_SOUND = 'PUSH_INTERNAL_SOUND',
     POP_INTERNAL_SOUND = 'POP_INTERNAL_SOUND',
@@ -30,6 +31,7 @@ export enum Types {
 
 type LoadSoundboxAction = Action<Types.LOAD_SOUNDBOX, ISoundbox>;
 type FilterSoundboxAction = Action<Types.FILTER_SOUNDBOX, boolean>;
+type SearchSoundboxAction = Action<Types.SEARCH_SOUNDBOX, string>;
 type PushInternalSoundAction = Action<Types.PUSH_INTERNAL_SOUND, IInternalSound>;
 type PopInternalSoundAction = TypedAction<Types.POP_INTERNAL_SOUND>;
 type PushSentSoundAction = Action<Types.PUSH_SENT_SOUND, IExternalSound>;
@@ -41,7 +43,7 @@ type UpdateThemeAction = Action<Types.UPDATE_THEME, string>;
 type PushErrorAction = Action<Types.PUSH_ERROR_ACTION, any>;
 type PopErrorAction = TypedAction<Types.POP_ERROR_ACTION>;
 
-type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction;
+type SoundboxActions = LoadSoundboxAction | FilterSoundboxAction | SearchSoundboxAction;
 type SoundActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction;
 type TeamsActions = GetContextAction | UpdateThemeAction;
 type ErrorActions = PushErrorAction | PopErrorAction;
@@ -51,7 +53,8 @@ type TDispatch = (action: TActions) => void;
 type TState = {
     soundbox?: ISoundbox,
     filter: {
-        showAll: boolean
+        showAll: boolean,
+        search: string
     }
     queue: IQueue,
     offline: boolean,
@@ -62,7 +65,8 @@ type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
     soundbox: undefined,
     filter: {
-        showAll: true
+        showAll: true,
+        search: ''
     },
     queue: {
         internalSounds: [],
@@ -87,7 +91,8 @@ const MainContext = React.createContext<IContextProps>({
 const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
         case Types.LOAD_SOUNDBOX:
-        case Types.FILTER_SOUNDBOX: {
+        case Types.FILTER_SOUNDBOX:
+        case Types.SEARCH_SOUNDBOX: {
             return soundboxReducer(state, action);
         }
         case Types.PUSH_INTERNAL_SOUND:
@@ -126,6 +131,15 @@ const soundboxReducer = (state: TState, action: SoundboxActions): TState => {
                 filter: {
                     ...state.filter,
                     showAll: action.payload
+                }
+            }
+        }
+        case Types.SEARCH_SOUNDBOX: {
+            return {
+                ...state,
+                filter: {
+                    ...state.filter,
+                    search: action.payload
                 }
             }
         }

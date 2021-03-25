@@ -6,6 +6,7 @@ import Error from '../components/Error';
 import useTab from '../hooks/useTab';
 import Filter from '../components/Filter';
 import { useMainContext } from '../hooks/useContext';
+import Search from '../components/Search';
 
 const Tab = () => {
 
@@ -24,6 +25,7 @@ const Tab = () => {
             <h3>{teamsContext?.loginHint}</h3>
             <h3>{teamsContext?.theme}</h3>
             <Filter />
+            <Search />
             <Error />
             <main className="Tab-container">
                 <div>
