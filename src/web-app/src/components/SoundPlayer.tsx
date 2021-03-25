@@ -1,14 +1,11 @@
 import React from 'react';
-import { useContext } from '../hooks/useContext';
 import useSignalR from '../hooks/useSignalR';
 import useSoundPlayer from '../hooks/useSoundPlayer';
 import "./Sound.css";
 
 const SoundPlayer = () => {
 
-    const { context } = useContext();
-
-    const { queue, audioSource, onEnded, onPlaying } = useSoundPlayer();
+    const { offline, queue, audioSource, onEnded, onPlaying } = useSoundPlayer();
     useSignalR();
 
     const audio = React.useRef<HTMLAudioElement>(null);
@@ -36,7 +33,7 @@ const SoundPlayer = () => {
     return (
         <div>
             {
-                context.state.local ?
+                offline ?
                     <div>
                         <h3>{queue.internalSounds.length} internal sound(s) to play !</h3>
                         <audio src={audioSource} ref={audio} />

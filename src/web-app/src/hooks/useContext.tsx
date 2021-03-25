@@ -1,23 +1,57 @@
-import React, { Dispatch } from "react";
+import React from "react";
 import { IExternalSound, IInternalSound, IQueue, ISoundbox } from "../interfaces";
 import * as microsoftTeams from "@microsoft/teams-js";
 
-type LoadSoundboxAction = { type: 'loadSoundbox', soundbox: ISoundbox };
-type PushInternalSoundAction = { type: 'pushInternalSound', internalSound: IInternalSound };
-type PopInternalSoundAction = { type: 'popInternalSound' };
-type PushSentSoundAction = { type: 'pushSentSound', externalSound: IExternalSound };
-type PopSentSoundAction = { type: 'popSentSound' };
-type PushReceivedSoundAction = { type: 'pushReceivedSound', externalSound: IExternalSound };
-type PopReceivedSoundAction = { type: 'popReceivedSound' };
-type GetContextAction = { type: 'getContext', context: microsoftTeams.Context };
-type UpdateThemeAction = { type: 'updateTheme', theme: string };
-type TActions = LoadSoundboxAction | PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction | GetContextAction | UpdateThemeAction;
+export interface TypedAction<T> {
+    type: T;
+}
+
+export interface Action<T, P> extends TypedAction<T> {
+    payload: P;
+}
+
+export enum Types {
+    LOAD_SOUNDBOX = 'LOAD_SOUNDBOX',
+
+    PUSH_INTERNAL_SOUND = 'PUSH_INTERNAL_SOUND',
+    POP_INTERNAL_SOUND = 'POP_INTERNAL_SOUND',
+    PUSH_SENT_SOUND = 'PUSH_SENT_SOUND',
+    POP_SENT_SOUND = 'POP_SENT_SOUND',
+    PUSH_RECEIVED_SOUND = 'PUSH_RECEIVED_SOUND',
+    POP_RECEIVED_SOUND = 'POP_RECEIVED_SOUND',
+
+    GET_CONTEXT = 'GET_CONTEXT',
+    UPDATE_THEME = 'UPDATE_THEME',
+
+    PUSH_ERROR_ACTION = 'PUSH_ERROR_ACTION',
+    POP_ERROR_ACTION = 'POP_ERROR_ACTION'
+}
+
+type LoadSoundboxAction = Action<Types.LOAD_SOUNDBOX, ISoundbox>;
+type PushInternalSoundAction = Action<Types.PUSH_INTERNAL_SOUND, IInternalSound>;
+type PopInternalSoundAction = TypedAction<Types.POP_INTERNAL_SOUND>;
+type PushSentSoundAction = Action<Types.PUSH_SENT_SOUND, IExternalSound>;
+type PopSentSoundAction = TypedAction<Types.POP_SENT_SOUND>;
+type PushReceivedSoundAction = Action<Types.PUSH_RECEIVED_SOUND, IExternalSound>;
+type PopReceivedSoundAction = TypedAction<Types.POP_RECEIVED_SOUND>;
+type GetContextAction = Action<Types.GET_CONTEXT, microsoftTeams.Context>;
+type UpdateThemeAction = Action<Types.UPDATE_THEME, string>;
+type PushErrorAction = Action<Types.PUSH_ERROR_ACTION, any>;
+type PopErrorAction = TypedAction<Types.POP_ERROR_ACTION>;
+
+type SoundboxActions = LoadSoundboxAction;
+type SoundActions = PushInternalSoundAction | PopInternalSoundAction | PushSentSoundAction | PopSentSoundAction | PushReceivedSoundAction | PopReceivedSoundAction;
+type TeamsActions = GetContextAction | UpdateThemeAction;
+type ErrorActions = PushErrorAction | PopErrorAction;
+type TActions = SoundboxActions | SoundActions | TeamsActions | ErrorActions;
+
 type TDispatch = (action: TActions) => void;
 type TState = {
     soundbox?: ISoundbox,
     queue: IQueue,
-    local: boolean,
-    context?: microsoftTeams.Context,
+    offline: boolean,
+    teamsContext?: microsoftTeams.Context,
+    errors: string[]
 };
 type MainProviderProps = { children: React.ReactNode };
 const InitialState: TState = {
@@ -27,41 +61,77 @@ const InitialState: TState = {
         sentSounds: [],
         receivedSounds: []
     },
-    local: true,
-    context: undefined,
+    offline: true,
+    teamsContext: undefined,
+    errors: []
 };
 
-export interface IContextProps {
+interface IContextProps {
     state: TState;
-    dispatch: Dispatch<TActions>;
+    dispatch: TDispatch;
 }
 
-const MainContext = React.createContext<{ state: TState; dispatch: TDispatch }>({
+const MainContext = React.createContext<IContextProps>({
     dispatch: () => { },
     state: InitialState,
 });
 
 const mainReducer = (state: TState, action: TActions): TState => {
     switch (action.type) {
-        case 'loadSoundbox': {
+        case Types.LOAD_SOUNDBOX: {
+            return soundboxReducer(state, action);
+        }
+        case Types.PUSH_INTERNAL_SOUND:
+        case Types.POP_INTERNAL_SOUND:
+        case Types.PUSH_SENT_SOUND:
+        case Types.POP_SENT_SOUND:
+        case Types.PUSH_RECEIVED_SOUND:
+        case Types.POP_RECEIVED_SOUND: {
+            return soundReducer(state, action);
+        }
+        case Types.GET_CONTEXT:
+        case Types.UPDATE_THEME: {
+            return teamsReducer(state, action);
+        }
+        case Types.PUSH_ERROR_ACTION:
+        case Types.POP_ERROR_ACTION: {
+            return errorReducer(state, action);
+        }
+        default: {
+            return state;
+        }
+    }
+}
+
+const soundboxReducer = (state: TState, action: SoundboxActions): TState => {
+    switch (action.type) {
+        case Types.LOAD_SOUNDBOX: {
             return {
                 ...state,
-                soundbox: action.soundbox
+                soundbox: action.payload
             }
         }
-        case 'pushInternalSound': {
+        default: {
+            return state;
+        }
+    }
+}
+
+const soundReducer = (state: TState, action: SoundActions): TState => {
+    switch (action.type) {
+        case Types.PUSH_INTERNAL_SOUND: {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
                     internalSounds: [
                         ...state.queue.internalSounds,
-                        action.internalSound
+                        action.payload
                     ]
                 }
             }
         }
-        case 'popInternalSound': {
+        case Types.POP_INTERNAL_SOUND: {
             return {
                 ...state,
                 queue: {
@@ -70,19 +140,19 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 }
             }
         }
-        case 'pushSentSound': {
+        case Types.PUSH_SENT_SOUND: {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
                     sentSounds: [
                         ...state.queue.sentSounds,
-                        action.externalSound
+                        action.payload
                     ]
                 }
             }
         }
-        case 'popSentSound': {
+        case Types.POP_SENT_SOUND: {
             return {
                 ...state,
                 queue: {
@@ -91,19 +161,19 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 }
             }
         }
-        case 'pushReceivedSound': {
+        case Types.PUSH_RECEIVED_SOUND: {
             return {
                 ...state,
                 queue: {
                     ...state.queue,
                     receivedSounds: [
                         ...state.queue.receivedSounds,
-                        action.externalSound
+                        action.payload
                     ]
                 }
             }
         }
-        case 'popReceivedSound': {
+        case Types.POP_RECEIVED_SOUND: {
             return {
                 ...state,
                 queue: {
@@ -112,20 +182,28 @@ const mainReducer = (state: TState, action: TActions): TState => {
                 }
             }
         }
-        case 'getContext': {
+        default: {
+            return state;
+        }
+    }
+}
+
+const teamsReducer = (state: TState, action: TeamsActions): TState => {
+    switch (action.type) {
+        case Types.GET_CONTEXT: {
             return {
                 ...state,
-                context: action.context,
-                local: action.context?.channelId === undefined
+                teamsContext: action.payload,
+                offline: action.payload?.channelId === undefined
             }
         }
-        case 'updateTheme': {
-            if (state.context) {
+        case Types.UPDATE_THEME: {
+            if (state.teamsContext) {
                 return {
                     ...state,
-                    context: {
-                        ...state.context,
-                        theme: action.theme
+                    teamsContext: {
+                        ...state.teamsContext,
+                        theme: action.payload
                     }
                 }
             }
@@ -138,7 +216,43 @@ const mainReducer = (state: TState, action: TActions): TState => {
     }
 }
 
-const MainProvider = ({ children }: MainProviderProps) => {
+const errorReducer = (state: TState, action: ErrorActions): TState => {
+    switch (action.type) {
+        case Types.PUSH_ERROR_ACTION: {
+            const typeError = action.payload as TypeError;
+            if (typeError) {
+                return {
+                    ...state,
+                    errors: [
+                        ...state.errors,
+                        typeError.message
+                    ]
+                }
+            }
+
+            return {
+                ...state,
+                errors: [
+                    ...state.errors,
+                    action.payload.toString()
+                ]
+            }
+        }
+        case Types.POP_ERROR_ACTION: {
+            console.log(state.errors);
+
+            return {
+                ...state,
+                errors: state.errors.slice(1)
+            }
+        }
+        default: {
+            return state;
+        }
+    }
+}
+
+export const MainProvider = ({ children }: MainProviderProps) => {
     const [state, dispatch] = React.useReducer(mainReducer, InitialState);
     const value = { state, dispatch };
 
@@ -149,10 +263,10 @@ const MainProvider = ({ children }: MainProviderProps) => {
     )
 }
 
-const useContext = () => {
-    const context = React.useContext(MainContext);
+export const useMainContext = () => {
+    const mainContext = React.useContext(MainContext);
 
-    return { context };
+    const { state, dispatch } = mainContext;
+
+    return { state, dispatch };
 }
-
-export { MainProvider, useContext };

@@ -1,26 +1,30 @@
 import React from 'react';
 import { ISoundbox } from '../interfaces';
-import { useContext } from './useContext';
+import { Types, useMainContext } from './useContext';
 
 const useSoundbox = () => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
 
-    const { context } = useContext();
+    const { state, dispatch } = useMainContext();
 
-    const { soundbox } = context.state;
+    const { soundbox } = state;
 
     React.useEffect(() => {
         const fetchDatas = async () => {
-            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/soundbox`);
-            const soundbox = await response.json() as ISoundbox;
+            try {
+                const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/soundbox`);
+                const soundbox = await response.json() as ISoundbox;
 
-            context.dispatch({ type: 'loadSoundbox', soundbox: soundbox });
+                dispatch({ type: Types.LOAD_SOUNDBOX, payload: soundbox });
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         };
 
-        if (!context.state.soundbox) {
+        if (!soundbox) {
             fetchDatas();
         }
-    }, [REACT_APP_AZURE_FUNCTIONS_API, context]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, dispatch, soundbox]);
 
     return { soundbox }
 }

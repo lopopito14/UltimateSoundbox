@@ -1,5 +1,5 @@
 import React from 'react';
-import { useContext } from './useContext';
+import { Types, useMainContext } from './useContext';
 import { HubConnection, HubConnectionBuilder, IHttpConnectionOptions, LogLevel } from '@microsoft/signalr';
 import { IExternalSound, IGroupMessage, IJoinGroupMessage, ILeaveGroupMessage, IMessage, IPersonnalMessage } from '../interfaces';
 
@@ -9,35 +9,37 @@ const useSignalR = () => {
     const [connection, setConnection] = React.useState<HubConnection | undefined>(undefined);
     const [hasNegociate, setHasNegociate] = React.useState<boolean>(false);
 
-    const { context } = useContext();
+    const { state, dispatch } = useMainContext();
+
+    const { offline, teamsContext, queue } = state;
 
     const newPersonnalMessage = React.useCallback((data: any) => {
         const message = data as IMessage;
         if (message) {
-            context.dispatch({
-                type: 'pushReceivedSound',
-                externalSound: {
+            dispatch({
+                type: Types.PUSH_RECEIVED_SOUND,
+                payload: {
                     soundUrl: message.url,
                     sender: message.sender
                 }
             });
         }
-    }, [context]);
+    }, [dispatch]);
 
     const newGroupMessage = React.useCallback((data: any) => {
         const message = data as IMessage;
         if (message) {
-            if (message.sender !== context.state.context?.loginHint) {
-                context.dispatch({
-                    type: 'pushReceivedSound',
-                    externalSound: {
+            if (message.sender !== teamsContext?.loginHint) {
+                dispatch({
+                    type: Types.PUSH_RECEIVED_SOUND,
+                    payload: {
                         soundUrl: message.url,
                         sender: message.sender
                     }
                 });
             }
         }
-    }, [context]);
+    }, [dispatch, teamsContext?.loginHint]);
 
     React.useEffect(() => {
 
@@ -48,14 +50,18 @@ const useSignalR = () => {
                 groupId: groupId
             };
 
-            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/groupMessage`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(groupMessage)
-            });
+            try {
+                await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/groupMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(groupMessage)
+                });
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -66,25 +72,29 @@ const useSignalR = () => {
                 userId: userId
             };
 
-            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/personnalMessage`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(personnalMessage)
-            });
+            try {
+                await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/personnalMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(personnalMessage)
+                });
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         }
 
-        if (!context.state.local) {
-            if (context.state.queue.sentSounds.length > 0) {
-                if (context.state.context?.groupId) {
-                    sendGroupSound(context.state.queue.sentSounds[0], context.state.context?.groupId);
-                    context.dispatch({ type: 'popSentSound' });
+        if (!offline) {
+            if (queue.sentSounds.length > 0) {
+                if (teamsContext?.groupId) {
+                    sendGroupSound(queue.sentSounds[0], teamsContext?.groupId);
+                    dispatch({ type: Types.POP_SENT_SOUND });
                 }
             }
         }
-    }, [REACT_APP_AZURE_FUNCTIONS_API, context, context.state.local, context.state.queue.sentSounds])
+    }, [REACT_APP_AZURE_FUNCTIONS_API, dispatch, offline, queue.sentSounds, teamsContext?.groupId])
 
     React.useEffect(() => {
 
@@ -121,7 +131,7 @@ const useSignalR = () => {
                 connection.on("groupMessage", newGroupMessage);
                 await connection.start();
             } catch (e) {
-                console.error(e);
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
             }
         };
 
@@ -134,21 +144,21 @@ const useSignalR = () => {
                     setConnection(undefined);
                 }
             } catch (e) {
-                console.error(e);
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
             }
         };
 
-        if (context.state.local) {
+        if (offline) {
             if (connection) {
                 unSubscribe();
             }
         } else {
-            if (!hasNegociate && context.state.context?.loginHint) {
-                subscribe(context.state.context?.loginHint);
+            if (!hasNegociate && teamsContext?.loginHint) {
+                subscribe(teamsContext?.loginHint);
             }
         }
 
-    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.loginHint, context.state.local, hasNegociate, newGroupMessage, newPersonnalMessage]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, dispatch, hasNegociate, newGroupMessage, newPersonnalMessage, offline, teamsContext?.loginHint]);
 
     React.useEffect(() => {
 
@@ -158,14 +168,18 @@ const useSignalR = () => {
                 userId: userId
             };
 
-            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/leaveGroup`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(leaveGroupMessage)
-            });
+            try {
+                await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/leaveGroup`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(leaveGroupMessage)
+                });
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         }
 
         const joinGroup = async (groupId: string, userId: string) => {
@@ -174,23 +188,27 @@ const useSignalR = () => {
                 userId: userId
             };
 
-            await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/joinGroup`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(joinGroupMessage)
-            });
+            try {
+                await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/joinGroup`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(joinGroupMessage)
+                });
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         }
 
         if (connection) {
-            if (context.state.context?.groupId && context.state.context?.loginHint) {
-                leaveGroup(context.state.context?.groupId, context.state.context?.loginHint);
-                joinGroup(context.state.context?.groupId, context.state.context?.loginHint);
+            if (teamsContext?.groupId && teamsContext?.loginHint) {
+                leaveGroup(teamsContext?.groupId, teamsContext?.loginHint);
+                joinGroup(teamsContext?.groupId, teamsContext?.loginHint);
             }
         }
-    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, context.state.context?.groupId, context.state.context?.loginHint]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, connection, dispatch, teamsContext?.groupId, teamsContext?.loginHint]);
 
     return {}
 }

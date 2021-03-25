@@ -1,19 +1,21 @@
 import React from 'react';
-import { useContext } from './useContext';
+import { Types, useMainContext } from './useContext';
 
 const useSound = (bundleId: string, soundId: string, movieId: string) => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
 
-    const { context } = useContext();
+    const { state, dispatch } = useMainContext();
+
+    const { offline, teamsContext } = state;
 
     const onQueueSound = React.useCallback(() => {
         const uri: string = `${REACT_APP_AZURE_FUNCTIONS_API}/sound/${bundleId}/${soundId}/${movieId}`;
-        if (context.state.local) {
-            context.dispatch({ type: 'pushInternalSound', internalSound: { soundUrl: uri } });
-        } else if (context.state.context?.loginHint) {
-            context.dispatch({ type: 'pushSentSound', externalSound: { soundUrl: uri, sender: context.state.context?.loginHint } });
+        if (offline) {
+            dispatch({ type: Types.PUSH_INTERNAL_SOUND, payload: { soundUrl: uri } });
+        } else if (teamsContext?.loginHint) {
+            dispatch({ type: Types.PUSH_SENT_SOUND, payload: { soundUrl: uri, sender: teamsContext?.loginHint } });
         }
-    }, [REACT_APP_AZURE_FUNCTIONS_API, bundleId, context, movieId, soundId]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, bundleId, dispatch, movieId, soundId, offline, teamsContext?.loginHint]);
 
     return { onQueueSound }
 }

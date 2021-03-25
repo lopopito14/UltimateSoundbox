@@ -1,20 +1,27 @@
 import React from 'react';
+import { Types, useMainContext } from './useContext';
 
 const useBanner = (bundleId: string) => {
     const { REACT_APP_AZURE_FUNCTIONS_API } = process.env;
+
+    const { dispatch } = useMainContext();
 
     const [banner, setBanner] = React.useState<string | undefined>(undefined);
 
     React.useEffect(() => {
         const fetchBanner = async () => {
-            const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/banner/${bundleId}`);
-            const base64 = await response.text();
+            try {
+                const response = await fetch(`${REACT_APP_AZURE_FUNCTIONS_API}/banner/${bundleId}`);
+                const base64 = await response.text();
 
-            setBanner(base64);
+                setBanner(base64);
+            } catch (e) {
+                dispatch({ type: Types.PUSH_ERROR_ACTION, payload: e });
+            }
         };
 
         fetchBanner();
-    }, [REACT_APP_AZURE_FUNCTIONS_API, bundleId]);
+    }, [REACT_APP_AZURE_FUNCTIONS_API, bundleId, dispatch]);
 
     return { banner }
 }

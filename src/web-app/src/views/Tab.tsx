@@ -1,30 +1,14 @@
 import './Tab.css';
 import useSoundbox from '../hooks/useSoundbox';
-import * as microsoftTeams from "@microsoft/teams-js";
-import React from 'react';
 import SoundPlayer from '../components/SoundPlayer';
 import Bundle from '../components/Bundle';
-import { useContext } from '../hooks/useContext';
+import Error from '../components/Error';
+import useTab from '../hooks/useTab';
 
 const Tab = () => {
 
     const { soundbox } = useSoundbox();
-    const { context } = useContext();
-
-    React.useEffect(() => {
-
-        if (!context.state.context) {
-
-            microsoftTeams.getContext((teamsContext: microsoftTeams.Context) => {
-                context.dispatch({ type: 'getContext', context: teamsContext });
-            });
-
-            microsoftTeams.registerOnThemeChangeHandler((theme: string) => {
-                context.dispatch({ type: 'updateTheme', theme: theme });
-            });
-        }
-
-    }, [context]);
+    const { teamsContext } = useTab();
 
     return (
         <div className="Tab">
@@ -32,8 +16,9 @@ const Tab = () => {
                 <h1>ULTIMATE SOUNDBOX</h1>
             </header>
             <SoundPlayer />
-            <h3>{context.state.context?.loginHint}</h3>
-            <h3>{context.state.context?.theme}</h3>
+            <h3>{teamsContext?.loginHint}</h3>
+            <h3>{teamsContext?.theme}</h3>
+            <Error />
             <main className="Tab-container">
                 <div>
                     {
