@@ -25,6 +25,8 @@ const useSoundbox = () => {
             fetchDatas();
         }
     }, [REACT_APP_AZURE_FUNCTIONS_API, dispatch, soundbox]);
+
+    return { soundbox };
 }
 
 export default useSoundbox;

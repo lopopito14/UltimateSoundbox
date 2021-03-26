@@ -10,7 +10,10 @@
     - [ ] Add sticky bar
     - [ ] Progress bar soundbox loading
     - [ ] Error message (in Toast)
+    - [ ] Added message timestamp
+    - [ ] Added Sass
 
 ## Functions
 
     - [x] SignalR connection
+    - [ ] Added message timestamp

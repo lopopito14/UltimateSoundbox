@@ -5,28 +5,29 @@ import Bundle from '../components/Bundle';
 import Error from '../components/Error';
 import useTab from '../hooks/useTab';
 import Filter from '../components/Filter';
-import { useMainContext } from '../hooks/useContext';
 import Search from '../components/Search';
 
 const Tab = () => {
 
-    useSoundbox();
+    const { soundbox } = useSoundbox();
     const { teamsContext } = useTab();
-
-    const { state } = useMainContext();
-    const { soundbox } = state;
 
     return (
         <div className="Tab">
             <header className="Tab-header">
                 <h1>ULTIMATE SOUNDBOX</h1>
+                <SoundPlayer />
+                {
+                    teamsContext &&
+                    <div>
+                        <h3>{teamsContext.loginHint}</h3>
+                        <h3>{teamsContext.theme}</h3>
+                    </div>
+                }
+                <Filter />
+                <Search />
+                <Error />
             </header>
-            <SoundPlayer />
-            <h3>{teamsContext?.loginHint}</h3>
-            <h3>{teamsContext?.theme}</h3>
-            <Filter />
-            <Search />
-            <Error />
             <main className="Tab-container">
                 <div>
                     {
