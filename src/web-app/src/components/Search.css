@@ -1,1 +1,8 @@
+.Search-container {
+  display: flex;
+  justify-content: center;
+}
 
+.Search-container label {
+  margin: auto 0;
+}

@@ -9,13 +9,39 @@
 .Sound-card:hover {
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  opacity: 0.8;
+  transition: all ease-out 0.5s;
 }
 
-.Sound-img {
-  width: 100%;
+.Sound-overlay {
+  padding: 0;
+}
+
+.Sound-favorite {
+  position: absolute;
+  right: 5px;
+  top: 0px;
+  font-size: 1.5rem;
+  color: yellow;
+}
+
+.Sound-favorite-icon-show {
+  display: inline;
+}
+
+.Sound-favorite-icon-hide {
+  display: none;
+}
+
+.Sound-body {
+  display: flex;
+  padding: 0.5rem !important;
 }
 
 .Sound-title {
-  padding: 2px 16px;
-  text-align: center;
+  margin: auto !important;
+}
+
+.Sound-spinner {
+  margin: auto;
 }

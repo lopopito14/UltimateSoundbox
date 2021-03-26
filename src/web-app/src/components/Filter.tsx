@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { ButtonGroup, ToggleButton } from 'react-bootstrap';
 import useFilter from '../hooks/useFilter';
 import './Filter.css';
 
@@ -14,10 +15,26 @@ const Filter = () => {
     }, []);
 
     return (
-        <div>
-            <button onClick={() => onChangeFilter(true)}>All</button>
-            <button onClick={() => onChangeFilter(false)}>Favorite</button>
-        </div>
+        <ButtonGroup toggle={true} aria-label="Filter">
+            <ToggleButton
+                type="radio"
+                variant="primary"
+                checked={showAll}
+                value="1"
+                onChange={() => onChangeFilter(true)}
+            >
+                All
+                </ToggleButton>
+            <ToggleButton
+                type="radio"
+                variant="primary"
+                checked={!showAll}
+                value="1"
+                onChange={() => onChangeFilter(false)}
+            >
+                Favorite
+                </ToggleButton>
+        </ButtonGroup>
     )
 }
 

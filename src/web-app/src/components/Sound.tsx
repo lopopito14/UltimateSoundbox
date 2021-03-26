@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, Spinner } from 'react-bootstrap';
 import { useMainContext } from '../hooks/useContext';
 import useFavorite from '../hooks/useFavorite';
 import useImage from '../hooks/useImage';
@@ -17,6 +18,8 @@ const Sound = (props: IProps) => {
     const { bundleId, sound } = props;
 
     const [displaySound, setDisplaySound] = React.useState<boolean>(true);
+    const [isOnCardOver, setIsOnCardOver] = React.useState<boolean>(false);
+    const [showFavorite, setShowFavorite] = React.useState<boolean>(false);
 
     const { state } = useMainContext();
     const { showAll, search } = state.filter;
@@ -26,7 +29,9 @@ const Sound = (props: IProps) => {
     const { manageFavorite } = useFavorite(bundleId, sound.id, sound.movie);
     const { add, remove } = useLocalStorage(bundleId, sound.id);
 
-    const changeFavorite = React.useCallback((favorite: boolean) => {
+    const changeFavorite = React.useCallback((e: React.MouseEvent<HTMLElement, MouseEvent>, favorite: boolean) => {
+        e.stopPropagation();
+
         manageFavorite();
 
         if (favorite) {
@@ -35,6 +40,14 @@ const Sound = (props: IProps) => {
             remove();
         }
     }, [add, manageFavorite, remove]);
+
+    React.useEffect(() => {
+        if (isOnCardOver) {
+            setShowFavorite(true);
+        } else {
+            setShowFavorite(sound.favorite);
+        }
+    }, [isOnCardOver, sound.favorite]);
 
     React.useEffect(() => {
 
@@ -55,17 +68,26 @@ const Sound = (props: IProps) => {
         <>
             {
                 displaySound &&
-                <div className="Sound-card">
-                    <div onClick={onQueueSound}>
-                        <img className="Sound-img" src={image} alt={sound.title} />
-                        <h4 className="Sound-title">{sound.title}</h4>
-                    </div>
-                    <button onClick={() => changeFavorite(!sound.favorite)}>
-                        {
-                            sound.favorite ? 'Remove' : 'Add'
-                        }
-                    </button>
-                </div>
+                <Card className="Sound-card" onClick={onQueueSound} onMouseEnter={() => setIsOnCardOver(true)} onMouseLeave={() => setIsOnCardOver(false)}>
+                    {
+                        image ?
+                            <>
+                                <Card.Img variant="top" src={image} />
+                                <Card.ImgOverlay className="Sound-overlay">
+                                    <i className={`Sound-favorite ${sound.favorite ? 'bi-star-fill' : 'bi-star'} ${showFavorite ? 'Sound-favorite-icon-show' : 'Sound-favorite-icon-hide'}`} onClick={(e) => changeFavorite(e, !sound.favorite)}></i>
+                                </Card.ImgOverlay>
+                                <Card.Body className="Sound-body">
+                                    <Card.Title className="Sound-title ">{sound.title}</Card.Title>
+                                </Card.Body>
+                            </>
+                            :
+                            <>
+                                <Card.Body className="Sound-body">
+                                    <Spinner animation="border" variant="success" className="Sound-spinner" />
+                                </Card.Body>
+                            </>
+                    }
+                </Card>
             }
         </>
     );

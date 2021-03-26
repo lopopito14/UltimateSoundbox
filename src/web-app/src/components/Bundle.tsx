@@ -2,6 +2,7 @@ import { IBundle } from '../interfaces';
 import Sound from './Sound';
 import "./Bundle.css";
 import useBanner from '../hooks/useBanner';
+import { Navbar } from 'react-bootstrap';
 
 interface IProps {
     key: string;
@@ -15,10 +16,20 @@ const Bundle = (props: IProps) => {
 
     return (
         <div>
-            <div className="Bundle-header">
-                <h2>{bundle.title}</h2>
-                <img src={banner} alt={bundle.title} />
-            </div>
+            <Navbar bg="light" variant="light">
+                <Navbar.Brand>
+                    <div className="Bundle-header">
+                        <img
+                            alt={bundle.title}
+                            src={banner}
+                            width={100}
+                            height={50}
+                            className="d-inline-block align-top"
+                        />
+                        <h2>{`${bundle.title}`}</h2>
+                    </div>
+                </Navbar.Brand>
+            </Navbar>
             <div className="Sound-container">
                 {
                     bundle.sounds.map(s =>

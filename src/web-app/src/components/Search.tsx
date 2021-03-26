@@ -1,5 +1,6 @@
 
 import React, { FormEvent } from 'react';
+import { Button, FormControl, InputGroup } from 'react-bootstrap';
 import useSearch from '../hooks/useSearch';
 import './Search.css';
 
@@ -14,10 +15,17 @@ const Search = () => {
     }, []);
 
     return (
-        <div>
-            <label htmlFor="search">Search:</label>
-            <input type="text" id="search" name="search" onInput={onSearch} value={search} />
-            <button onClick={() => setSearch('')}>Clear</button>
+        <div className="Search-container">
+            <InputGroup>
+                <FormControl
+                    placeholder="Search..."
+                    value={search}
+                    onInput={onSearch}
+                />
+                <InputGroup.Append>
+                    <Button variant="danger" onClick={() => setSearch('')} disabled={search === ''}>Clear</Button>
+                </InputGroup.Append>
+            </InputGroup>
         </div>
     )
 }

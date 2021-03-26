@@ -24,10 +24,18 @@ const Tab = () => {
                         <h3>{teamsContext.theme}</h3>
                     </div>
                 }
-                <Filter />
-                <Search />
                 <Error />
             </header>
+            <section className="Tab-filter-search-section">
+                <div className="Tab-filter-search-container">
+                    <div className="Tab-filter">
+                        <Filter />
+                    </div>
+                    <div className="Tab-search">
+                        <Search />
+                    </div>
+                </div>
+            </section>
             <main className="Tab-container">
                 <div>
                     {
