@@ -6,11 +6,29 @@ import Error from '../components/Error';
 import useTab from '../hooks/useTab';
 import Filter from '../components/Filter';
 import Search from '../components/Search';
+import React from 'react';
 
 const Tab = () => {
 
     const { soundbox } = useSoundbox();
     const { teamsContext } = useTab();
+
+    const onLoad = (e: Event) => {
+        console.log("window loaded !!!!");
+    }
+
+    const onUnload = (e: Event) => {
+        console.log("window unloaded !!!!");
+    }
+
+    React.useEffect(() => {
+        window.addEventListener('load', onLoad);
+        window.addEventListener('unload', onUnload);
+        return () => {
+            window.removeEventListener('load', onLoad);
+            window.removeEventListener('unload', onUnload);
+        }
+    }, [])
 
     return (
         <div className="Tab">
