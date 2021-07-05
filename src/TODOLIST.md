@@ -17,6 +17,7 @@
     - [ ] Get users connection state
     - [ ] Removing user at window unload event
     - [ ] Recording own voice
+	- [ ] Keyboard key mapping
 
 ## Functions
 
